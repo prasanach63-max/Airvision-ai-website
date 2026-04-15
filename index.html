@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AirVision AI | GPS-Based Pollution Intelligence System</title>
+    <meta name="description"
+        content="Real-time AI-powered air quality analysis and family health protection for smart cities.">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Firebase SDK (compat v9) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Animated Orb Background -->
+    <div class="dynamic-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="glass-overlay"></div>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="main-nav">
+        <div class="nav-brand" onclick="navigateTo('home')">
+            <i data-lucide="hexagon" class="brand-icon"></i>
+            <span>SAFE<span class="accent">CITY</span> AI</span>
+        </div>
+        <div class="nav-links" id="nav-links">
+            <a href="#home" class="nav-link active" data-route="home">Home</a>
+            <a href="#dashboard" class="nav-link" data-route="dashboard">Dashboard</a>
+            <a href="#health" class="nav-link" data-route="health">Health Hub</a>
+            <a href="#about" class="nav-link" data-route="about">About</a>
+            <a href="#contact" class="nav-link" data-route="contact">Contact</a>
+        </div>
+        <div class="nav-action">
+            <!-- Shown when logged out -->
+            <div id="nav-auth-out" style="display:flex; align-items:center; gap:0.75rem;">
+                <button class="btn-outline" onclick="navigateTo('login')">Login</button>
+                <button class="btn-primary" onclick="navigateTo('login')">Sign Up</button>
+            </div>
+            <!-- Shown when logged in -->
+            <div id="nav-auth-in" style="display:none; align-items:center; gap:0.75rem;">
+                <div class="nav-user-chip" id="nav-user-name">User</div>
+                <button class="btn-outline" id="btn-logout" onclick="handleLogout()">Logout</button>
+            </div>
+            <button class="nav-hamburger" id="nav-hamburger"><i data-lucide="menu"></i></button>
+        </div>
+    </nav>
+
+    <!-- ======================== PAGE: HOME ======================== -->
+    <div class="page-view active-view" id="view-home">
+        <div class="hero-container">
+            <div class="hero-content slide-up">
+                <div class="pill-badge"><i data-lucide="zap" style="width:14px;"></i> LIVE AI • REAL-TIME GPS • V5.1
+                </div>
+                <h1 class="mega-title">Smart City <br><span class="gradient-text">Air Quality</span><br>Intelligence
+                </h1>
+                <p class="hero-desc">Real-time air quality prediction using ML surrogate models. Tailored safety for
+                    newborns, pregnant women, mothers and all citizens — with instant health product links.</p>
+                <div class="hero-buttons">
+                    <button class="btn-primary btn-lg" onclick="navigateTo('dashboard')"><i
+                            data-lucide="bar-chart-2"></i> Live Dashboard</button>
+                    <button class="btn-secondary btn-lg" onclick="navigateTo('about')">How It Works</button>
+                </div>
+                <div class="hero-stats">
+                    <div class="h-stat"><strong>Real-Time</strong><span>Weather API</span></div>
+                    <div class="h-stat"><strong>ML Model</strong><span>AQI Prediction</span></div>
+                    <div class="h-stat"><strong>4 Profiles</strong><span>Family Health</span></div>
+                    <div class="h-stat"><strong>Live GPS</strong><span>Google Maps</span></div>
+                </div>
+            </div>
+            <div class="hero-visual float-anim">
+                <div class="glass-card visual-card">
+                    <i data-lucide="shield-check" class="giant-icon"></i>
+                    <h3>Air Guardian</h3>
+                    <p>Monitoring your city in real-time</p>
+                    <div class="vis-aqi-badge" id="home-aqi-badge">AQI: Loading...</div>
+                </div>
+            </div>
+        </div>
+        <!-- Features -->
+        <div class="container" style="padding-bottom:6rem;">
+            <div class="section-head">
+                <span class="pill-badge">Platform Capabilities</span>
+                <h2 class="section-title" style="margin-top:1rem;">Everything to <span class="gradient-text">Stay
+                        Safe</span></h2>
+            </div>
+            <div class="features-grid">
+                <div class="glass-card feat-card">
+                    <div class="feat-icon"><i data-lucide="cloud"></i></div>
+                    <h3>Real-Time AQI</h3>
+                    <p>Pulls live weather via OpenWeatherMap and computes AQI using ML surrogate models for your exact
+                        GPS location.</p>
+                </div>
+                <div class="glass-card feat-card">
+                    <div class="feat-icon"><i data-lucide="users"></i></div>
+                    <h3>Family Health Profiles</h3>
+                    <p>Tailored safety advice for Newborns, Pregnant Women, Mothers & Adults with diet, gear and home
+                        remedy suggestions.</p>
+                </div>
+                <div class="glass-card feat-card">
+                    <div class="feat-icon"><i data-lucide="brain-circuit"></i></div>
+                    <h3>Sensitivity Analysis</h3>
+                    <p>ML parameter breakdown showing which environmental factors drive pollution — traffic, industry,
+                        humidity, or heat.</p>
+                </div>
+                <div class="glass-card feat-card">
+                    <div class="feat-icon"><i data-lucide="shopping-bag"></i></div>
+                    <h3>Marketplace Links</h3>
+                    <p>One-click ordering: meals on Swiggy, drinks on Zomato, sunscreen & safety gear on Amazon —
+                        directly from the dashboard.</p>
+                </div>
+                <div class="glass-card feat-card">
+                    <div class="feat-icon"><i data-lucide="map-pin"></i></div>
+                    <h3>Google Maps Live</h3>
+                    <p>Uses GPS + Nominatim to show your exact location on an interactive Google Maps embed inside the
+                        dashboard.</p>
+                </div>
+                <div class="glass-card feat-card">
+                    <div class="feat-icon"><i data-lucide="lock"></i></div>
+                    <h3>Secure Login</h3>
+                    <p>Animated sliding login/signup panel. Sign in to access personalized health recommendations and
+                        saved profiles.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== PAGE: DASHBOARD ======================== -->
+    <div class="page-view" id="view-dashboard">
+        <div class="container dash-wrap">
+            <div class="dash-topbar">
+                <div>
+                    <h2 class="dash-title">Live Air Analysis</h2>
+                    <p class="season-label" id="season-badge">⛅ DETECTING SEASON...</p>
+                </div>
+                <div class="dash-controls">
+                    <div class="loc-chip"><i data-lucide="navigation" style="width:14px;"></i><span
+                            id="loc-display">Detecting location...</span></div>
+                    <button class="ctrl-btn" id="btn-refresh" title="Refresh"><i data-lucide="refresh-cw"
+                            style="width:18px;"></i></button>
+                </div>
+            </div>
+
+            <!-- KPI Row -->
+            <div class="kpi-row">
+                <div class="glass-card kpi-card">
+                    <div class="kpi-label">🌡 Temperature</div>
+                    <div class="kpi-value" id="val-temp">--</div>
+                </div>
+                <div class="glass-card kpi-card">
+                    <div class="kpi-label">💧 Humidity</div>
+                    <div class="kpi-value" id="val-humidity">--</div>
+                </div>
+                <div class="glass-card kpi-card">
+                    <div class="kpi-label">💨 Wind Speed</div>
+                    <div class="kpi-value" id="val-wind">--</div>
+                </div>
+                <div class="glass-card kpi-card">
+                    <div class="kpi-label">📊 Pressure</div>
+                    <div class="kpi-value" id="val-pressure">--</div>
+                </div>
+            </div>
+
+            <!-- AQI + Sensitivity Chart -->
+            <div class="dash-main">
+                <div class="glass-card" style="text-align:center; padding:2rem;">
+                    <div class="panel-label">
+                        <div class="live-dot"></div>Air Quality Index
+                    </div>
+                    <div class="gauge-wrap"><canvas id="aqi-gauge"></canvas>
+                        <div class="gauge-readout">
+                            <span class="gauge-num" id="aqi-value">0</span>
+                            <span class="gauge-lbl" id="aqi-status">ANALYZING</span>
+                        </div>
+                    </div>
+                    <div id="aqi-alert" class="aqi-alert-bar">Calculating atmospheric conditions...</div>
+                </div>
+                <div class="glass-card chart-panel" style="padding:2rem;">
+                    <div class="panel-label"><i data-lucide="cpu" style="width:16px;"></i>ML Surrogate Sensitivity
+                        Analysis</div>
+                    <div class="chart-box"><canvas id="sensitivity-chart"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Google Maps Live Location -->
+            <div class="glass-card" style="padding:0; overflow:hidden; margin-bottom:1.5rem;">
+                <div class="map-header">
+                    <div class="panel-label" style="margin:0;">
+                        <div class="live-dot"></div>Live Location — Google Maps
+                    </div>
+                    <div class="loc-chip"><i data-lucide="navigation" style="width:14px;"></i><span
+                            id="loc-display-map">Detecting GPS...</span></div>
+                </div>
+                <div id="map-wrapper"
+                    style="width:100%; height:420px; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.3);">
+                    <div id="map-loading" style="text-align:center; color:#64748b;">
+                        <i data-lucide="map-pin"
+                            style="width:40px; height:40px; color:#3b82f6; margin-bottom:1rem;"></i>
+                        <p>Waiting for location permission...</p>
+                        <button onclick="triggerAnalysis()"
+                            style="margin-top:1rem; background:#3b82f6; color:#fff; border:none; padding:10px 24px; border-radius:8px; font-weight:700; cursor:pointer; font-family:inherit;">Allow
+                            Location & Load Map</button>
+                    </div>
+                    <iframe id="google-map-frame" style="display:none; width:100%; height:420px; border:none;"
+                        loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+                </div>
+            </div>
+
+            <!-- Family Health Profiles -->
+            <div class="glass-card health-panel group-colors" style="padding:2rem; margin-bottom:3rem;">
+                <div class="panel-label" style="margin-bottom:1.5rem;"><i data-lucide="heart-pulse"
+                        style="width:16px;"></i>Universal Family Health Profiles</div>
+
+                <!-- Newborn -->
+                <div class="h-row" id="row-newborn">
+                    <div class="h-row-header">
+                        <div class="h-row-id">
+                            <div class="p-icon"><i data-lucide="baby" style="width:20px;"></i></div><strong>Newborn
+                                Babies Air Safety</strong>
+                        </div>
+                        <button class="btn-git" onclick="toggleHealthRow(this)">Get in touch <i
+                                data-lucide="chevron-down" style="width:16px;"></i></button>
+                    </div>
+                    <div class="h-row-body">
+                        <div class="h-data-cell"><span>Safety Info</span>
+                            <p id="tip-baby">Scanning...</p>
+                        </div>
+                        <div class="h-data-cell"><span>🍽 Meals</span>
+                            <div id="meal-baby">--</div>
+                        </div>
+                        <div class="h-data-cell"><span>🛡 Gear</span>
+                            <div id="cloth-baby">--</div>
+                        </div>
+                        <div class="h-data-cell"><span>🥤 Drinks</span>
+                            <div id="drink-baby">--</div>
+                        </div>
+                        <div class="h-data-cell"><span>⏰ Outdoor Time</span>
+                            <p id="time-baby">--</p>
+                        </div>
+                        <div class="h-data-cell full-col"><span>🌿 Home Remedies</span>
+                            <p id="rem-baby">--</p>
+                        </div>
+                        <div class="h-data-cell full-col"><span>☀️ If Going Outside</span>
+                            <div id="outside-baby" class="outside-links">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregnancy -->
+                <div class="h-row" id="row-pregnancy">
+                    <div class="h-row-header">
+                        <div class="h-row-id">
+                            <div class="p-icon"><i data-lucide="heart" style="width:20px;"></i></div><strong>Pregnancy
+                                Women Safety</strong>
+                        </div>
+                        <button class="btn-git" onclick="toggleHealthRow(this)">Get in touch <i
+                                data-lucide="chevron-down" style="width:16px;"></i></button>
+                    </div>
+                    <div class="h-row-body">
+                        <div class="h-data-cell"><span>Safety Info</span>
+                            <p id="tip-pregnant">Scanning...</p>
+                        </div>
+                        <div class="h-data-cell"><span>🍽 Meals</span>
+                            <div id="meal-pregnant">--</div>
+                        </div>
+                        <div class="h-data-cell"><span>🛡 Gear</span>
+                            <div id="cloth-pregnant">--</div>
+                        </div>
+                        <div class="h-data-cell"><span>🥤 Drinks</span>
+                            <div id="drink-pregnant">--</div>
+                        </div>
+                        <div class="h-data-cell"><span>⏰ Outdoor Time</span>
+                            <p id="time-pregnant">--</p>
+                        </div>
+                        <div class="h-data-cell full-col"><span>🌿 Home Remedies</span>
+                            <p id="rem-pregnant">--</p>
+                        </div>
+                        <div class="h-data-cell full-col"><span>☀️ If Going Outside</span>
+                            <div id="outside-pregnant" class="outside-links">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mothers -->
+                <div class="h-row" id="row-mothers">
+                    <div class="h-row-header">
+                        <div class="h-row-id">
+                            <div class="p-icon"><i data-lucide="shield-check" style="width:20px;"></i></div>
+                            <strong>Mothers & Adults Protection</strong>
+                        </div>
+                        <button class="btn-git" onclick="toggleHealthRow(this)">Get in touch <i
+                                data-lucide="chevron-down" style="width:16px;"></i></button>
+                    </div>
+                    <div class="h-row-body">
+                        <div class="h-data-cell"><span>Safety Info</span>
+                            <p id="tip-mother">Scanning...</p>
+                        </div>
+                        <div class="h-data-cell"><span>🍽 Meals</span>
+                            <div id="meal-mother">--</div>
+                        </div>
+                        <div class="h-data-cell"><span>🛡 Gear</span>
+                            <div id="cloth-mother">--</div>
+                        </div>
+                        <div class="h-data-cell"><span>🥤 Drinks</span>
+                            <div id="drink-mother">--</div>
+                        </div>
+                        <div class="h-data-cell"><span>⏰ Outdoor Time</span>
+                            <p id="time-mother">--</p>
+                        </div>
+                        <div class="h-data-cell full-col"><span>🌿 Home Remedies</span>
+                            <p id="rem-mother">--</p>
+                        </div>
+                        <div class="h-data-cell full-col"><span>☀️ If Going Outside</span>
+                            <div id="outside-mother" class="outside-links">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Normal -->
+                <div class="h-row" id="row-normal">
+                    <div class="h-row-header">
+                        <div class="h-row-id">
+                            <div class="p-icon"><i data-lucide="user" style="width:20px;"></i></div><strong>Normal
+                                People Daily Insights</strong>
+                        </div>
+                        <button class="btn-git" onclick="toggleHealthRow(this)">Get in touch <i
+                                data-lucide="chevron-down" style="width:16px;"></i></button>
+                    </div>
+                    <div class="h-row-body">
+                        <div class="h-data-cell"><span>Safety Info</span>
+                            <p id="tip-normal">Scanning...</p>
+                        </div>
+                        <div class="h-data-cell"><span>🍽 Meals</span>
+                            <div id="meal-normal">--</div>
+                        </div>
+                        <div class="h-data-cell"><span>🛡 Gear</span>
+                            <div id="cloth-normal">--</div>
+                        </div>
+                        <div class="h-data-cell"><span>🥤 Drinks</span>
+                            <div id="drink-normal">--</div>
+                        </div>
+                        <div class="h-data-cell"><span>⏰ Outdoor Time</span>
+                            <p id="time-normal">--</p>
+                        </div>
+                        <div class="h-data-cell full-col"><span>🌿 Home Remedies</span>
+                            <p id="rem-normal">--</p>
+                        </div>
+                        <div class="h-data-cell full-col"><span>☀️ If Going Outside</span>
+                            <div id="outside-normal" class="outside-links">--</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align:center; margin-top:1.5rem;">
+                    <button class="btn-secondary" onclick="triggerAnalysis()" style="padding:14px 36px;">
+                        <i data-lucide="refresh-cw" style="width:16px;display:inline;margin-right:8px;"></i>Re-Sync Live
+                        Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== PAGE: HEALTH HUB ======================== -->
+    <div class="page-view" id="view-health">
+        <div class="container" style="padding:6rem 0;">
+            <div class="section-head" style="text-align:left; margin-bottom:3rem;">
+                <span class="pill-badge">Family Health Hub</span>
+                <h1 class="section-title" style="margin-top:1rem;">Family <span class="gradient-text">Air Safety</span>
+                    Guide</h1>
+                <p style="color:#94a3b8; margin-top:1rem; max-width:650px;">Personalized protection with home remedies,
+                    sunscreen, and outside safety products — all based on your real-time AQI.</p>
+            </div>
+
+            <div class="hub-grid">
+                <div class="glass-card hover-glow hub-card">
+                    <div class="card-head"><i data-lucide="baby" class="accent-icon"></i>
+                        <h3>Newborn Protection</h3>
+                    </div>
+                    <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:1rem;">Live air quality syncing for newborn
+                        safety guidelines, food & home remedies.</p>
+                    <a href="https://www.swiggy.com/search?query=baby+food+organic" target="_blank" class="link-btn">🍽
+                        Order Baby Food</a>
+                    <a href="https://www.amazon.in/s?k=baby+n95+mask+air+purifier" target="_blank" class="link-btn"
+                        style="margin-top:8px;">🛡 Safety Gear</a>
+                </div>
+                <div class="glass-card hover-glow hub-card">
+                    <div class="card-head"><i data-lucide="heart" class="accent-icon"></i>
+                        <h3>Pregnancy Safety</h3>
+                    </div>
+                    <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:1rem;">Daily wellness routines, safe
+                        outdoor timing, and iron-rich diet tracker.</p>
+                    <a href="https://www.zomato.com/search?q=healthy+pregnancy+food" target="_blank" class="link-btn">🥤
+                        Healthy Drinks</a>
+                    <a href="https://www.amazon.in/s?k=pregnancy+safe+sunscreen+spf50" target="_blank" class="link-btn"
+                        style="margin-top:8px;">☀️ Sunscreen</a>
+                </div>
+                <div class="glass-card hover-glow hub-card">
+                    <div class="card-head"><i data-lucide="shield-plus" class="accent-icon"></i>
+                        <h3>Mothers & Adults</h3>
+                    </div>
+                    <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:1rem;">Everyday protection plans,
+                        antioxidant food, and immunity-boosting home remedies.</p>
+                    <a href="https://www.amazon.in/s?k=n95+anti+pollution+mask" target="_blank" class="link-btn">😷 N95
+                        Masks</a>
+                    <a href="https://www.swiggy.com/search?query=immunity+booster+food" target="_blank" class="link-btn"
+                        style="margin-top:8px;">🌿 Immunity Food</a>
+                </div>
+            </div>
+
+            <div style="text-align:center; margin-top:3rem;">
+                <button class="btn-primary btn-lg" onclick="navigateTo('dashboard')"><i data-lucide="activity"></i> View
+                    Live AQI Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== PAGE: ABOUT ======================== -->
+    <div class="page-view" id="view-about">
+        <div class="container" style="padding:6rem 0;">
+            <div class="about-grid">
+                <div class="slide-up">
+                    <div class="glass-card image-placeholder"><i data-lucide="shield-check" class="giant-icon"></i>
+                    </div>
+                </div>
+                <div class="fade-in">
+                    <span class="pill-badge">About This Platform</span>
+                    <h2 class="section-title" style="margin:1rem 0;">Who <span class="gradient-text">We Are</span></h2>
+                    <p style="color:#94a3b8; line-height:1.8; margin-bottom:2rem;">SafeCity AI is a research-grade
+                        platform demonstrating ML surrogate modeling and sensitivity analysis for predicting urban air
+                        pollution — with real-world health actionability built in.</p>
+                    <div class="feature-list">
+                        <div class="feat-item">
+                            <div class="feat-icon"><i data-lucide="zap"></i></div>
+                            <div>
+                                <h4>Real-Time Monitoring</h4>
+                                <p style="color:#94a3b8;">Live weather data → ML model → instant AQI for your GPS
+                                    location.</p>
+                            </div>
+                        </div>
+                        <div class="feat-item">
+                            <div class="feat-icon"><i data-lucide="users"></i></div>
+                            <div>
+                                <h4>Family-First Design</h4>
+                                <p style="color:#94a3b8;">4 demographic profiles with tailored dietary, clothing, and
+                                    health guidance.</p>
+                            </div>
+                        </div>
+                        <div class="feat-item">
+                            <div class="feat-icon"><i data-lucide="map"></i></div>
+                            <div>
+                                <h4>Google Maps Integration</h4>
+                                <p style="color:#94a3b8;">GPS + Nominatim reverse geocoding shows your live location on
+                                    the map.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top:4rem;">
+                <h3 class="section-title" style="font-size:1.8rem; text-align:center;">Tech <span
+                        class="gradient-text">Stack</span></h3>
+                <div class="tech-strip">
+                    <div class="glass-card tech-chip"><strong>HTML5 + CSS3</strong><span>Structure & Styling</span>
+                    </div>
+                    <div class="glass-card tech-chip"><strong>Vanilla JS</strong><span>SPA Routing + Logic</span></div>
+                    <div class="glass-card tech-chip"><strong>Chart.js</strong><span>AQI & Sensitivity Plots</span>
+                    </div>
+                    <div class="glass-card tech-chip"><strong>OpenWeatherMap</strong><span>Live Weather API</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== PAGE: CONTACT ======================== -->
+    <div class="page-view" id="view-contact">
+        <div class="container" style="padding:6rem 0;">
+            <div style="text-align:center; max-width:600px; margin:0 auto 3rem;">
+                <span class="pill-badge">Get In Touch</span>
+                <h2 class="section-title" style="margin-top:1rem;">Contact <span class="gradient-text">Us</span></h2>
+                <p style="color:#94a3b8;">Have a question or feedback? Send us a message.</p>
+            </div>
+            <div class="glass-card contact-form-wrap" style="max-width:600px; margin:0 auto;">
+                <form class="contact-form" id="form-contact" onsubmit="handleContactSubmit(event)">
+                    <div class="input-line"><i data-lucide="user"></i><input type="text" id="contact-name"
+                            placeholder="Your Name" required></div>
+                    <div class="input-line"><i data-lucide="mail"></i><input type="email" id="contact-email"
+                            placeholder="Your Email" required></div>
+                    <div class="input-line" style="align-items:flex-start;"><i data-lucide="message-square"
+                            style="margin-top:15px;"></i><textarea id="contact-message" placeholder="Your Message"
+                            rows="4" required></textarea></div>
+                    <button type="submit" class="btn-primary"
+                        style="width:100%; justify-content:center; margin-top:10px;">Send Message <i
+                            data-lucide="send"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== PAGE: LOGIN ======================== -->
+    <div class="page-view" id="view-login"
+        style="display:none; align-items:center; justify-content:center; min-height:100vh;">
+        <div
+            style="width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem;">
+            <div class="login-box" id="login-container">
+
+                <!-- Sign Up Form -->
+                <div class="form-container sign-up-container">
+                    <form id="form-signup" onsubmit="handleSignUp(event)">
+                        <h1>Create Account</h1>
+                        <input type="text" id="signup-name" placeholder="Full Name" required />
+                        <input type="email" id="signup-email" placeholder="Email Address" required />
+                        <input type="password" id="signup-password" placeholder="Password (min 6 chars)" required
+                            minlength="6" />
+                        <div class="auth-msg" id="signup-msg"></div>
+                        <button type="submit" id="btn-signup">Sign Up</button>
+                    </form>
+                </div>
+
+                <!-- Sign In Form -->
+                <div class="form-container sign-in-container">
+                    <form id="form-signin" onsubmit="handleSignIn(event)">
+                        <h1>Sign In</h1>
+                        <input type="email" id="signin-email" placeholder="Email Address" required />
+                        <input type="password" id="signin-password" placeholder="Password" required />
+                        <div class="auth-msg" id="signin-msg"></div>
+                        <button type="submit" id="btn-do-login">Sign In →</button>
+                    </form>
+                </div>
+
+                <!-- Sliding Overlay -->
+                <div class="overlay-container">
+                    <div class="overlay">
+                        <div class="overlay-panel overlay-left">
+                            <h1>Welcome Back!</h1>
+                            <p>To keep connected, please login with your personal info</p>
+                            <button class="ghost" id="signIn">Sign In</button>
+                        </div>
+                        <div class="overlay-panel overlay-right">
+                            <h1>Hello, Friend!</h1>
+                            <p>Enter your personal details and start your journey with us</p>
+                            <button class="ghost" id="signUp">Sign Up</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="login-skip">
+                <button onclick="navigateTo('home')">← Back to Home</button>
+                <span style="color:#334155; margin:0 10px;">|</span>
+                <button onclick="navigateTo('dashboard')">Skip to Dashboard →</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
